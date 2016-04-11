@@ -158,8 +158,8 @@ public class MyPanel2 extends JPanel {
                                                 } catch (SQLException e) {
                                                     // Fail!
                                                     isConnected = false;
-                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
-                                                    client.sendOut("is DOWN");
+                                                    connectionStatus.setText(c.getCurrentNode()+" Waiting or Down");
+                                                    client.sendOut("is waiting or down");
                                                 }  break;
                         case "Palawan Branch":  Connection connection2 = null;
                                                 try {
@@ -175,8 +175,8 @@ public class MyPanel2 extends JPanel {
                                                 } catch (SQLException e) {
                                                     // Fail!
                                                     isConnected = false;
-                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
-                                                    client.sendOut("is DOWN");
+                                                    connectionStatus.setText(c.getCurrentNode()+" Waiting or Down");
+                                                    client.sendOut("is waiting or down");
                                                 }  break;
                         case "Marinduque Branch": Connection connection3 = null;
                                                 try {
@@ -192,8 +192,8 @@ public class MyPanel2 extends JPanel {
                                                 } catch (SQLException e) {
                                                     // Fail!
                                                     isConnected = false;
-                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
-                                                    client.sendOut("is DOWN");
+                                                    connectionStatus.setText(c.getCurrentNode()+" Waiting or  Down");
+                                                    client.sendOut("is waiting or down");
                                                 }  break;
                     }
                    

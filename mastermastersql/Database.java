@@ -54,7 +54,7 @@ public class Database
             if(checkTable())
                 return "Table " + tableName +" is currently locked. \n Please try again after a few seconds";
                 
-            else if(q.contains("UPDATE"))
+            else if(q.contains("UPDATE") || q.contains("update"))
             {
                 //execute the write lock
                 String prequery = "LOCK TABLE  " + tableName + " WRITE;";
@@ -62,6 +62,7 @@ public class Database
                 LockStatement = connect.getConnection().prepareStatement(prequery);
                 LockStatement.setQueryTimeout(20);
                 LockStatement.execute();
+                System.out.println("locked");
                 
                 tableLocked = 1; // global variable to be used to check if the table is locked or not
                 //delay for 2 seconds
@@ -73,7 +74,7 @@ public class Database
                 
                 statement.execute();
                 updateResult = statement.executeUpdate();
-                
+                System.out.println("inside middle");
                 //execute the write unclock
                 prequery = "UNLOCK TABLES;";
                 PreparedStatement UnlockStatement;
@@ -86,7 +87,14 @@ public class Database
                 return updateResult;
                 
             }
-            else if (q.contains("USE"))
+            else if (q.contains("USE") || q.contains("use"))
+            {
+                System.out.println("Query execution sucessfull."); 
+                rs = statement.executeQuery();
+                this.result = rs;  
+                return "Query execution sucessfull.";
+            }
+            else if (q.contains("CHANGE") || q.contains("change"))
             {
                 System.out.println("Query execution sucessfull."); 
                 rs = statement.executeQuery();
@@ -159,7 +167,7 @@ public class Database
 
     private boolean checkTable() {
         
-        String query = "SHOW OPEN TABLES WHERE `Table` LIKE '%crop%' AND `Database` LIKE 'db_hpq_marinduque' AND In_use > -1;";
+        String query = "SHOW OPEN TABLES WHERE `Table` LIKE '%crop%' AND `Database` LIKE 'db_hpq_palawan' AND In_use > -1;";
         
             try {
                 PreparedStatement statement;

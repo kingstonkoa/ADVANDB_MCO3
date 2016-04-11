@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mastermastersql.Controller;
 
 import javax.swing.JFrame;
@@ -19,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import mastermastersql.MyPanel;
 import mastermastersql.MyPanel2;
 /**
  *
@@ -33,6 +38,9 @@ public class Client {
     JTextArea messageArea = new JTextArea(8, 40);
     private final MyPanel2 panel2;
     private final Controller c;
+    private String server;
+    private String file;
+    private String position;
 
     /**
      * Constructs the client by laying out the GUI and registering a
@@ -114,8 +122,45 @@ public class Client {
                     //TODO CHANGE master to which ever
                     switch(parts[0])
                     {
-                        case "Palawan Branch" : break;
-                        case "Marinduque Branch" : break;
+                        case "Palawan Branch" : if(c.getCurrentMaster().equals("Palawan Branch"))
+                                                break;
+                                                c.connectToServer(c.getPalawanIP(), "replicator", "pass");
+                                                getMasterStatus();
+                                                c.connectToServer("localhost", "root", "");
+                                                String query = "STOP SLAVE;";
+                                                c.executeQuery(query);
+                                                query = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                                + "MASTER_USER = 'replicator', "
+                                                + "MASTER_PASSWORD = 'pass',"
+                                                + " MASTER_LOG_FILE = '" + file + "',"
+                                                + " MASTER_LOG_POS = " + position +  ";";
+                                                c.executeQuery(query);
+                                                query = "START SLAVE;";
+                                                c.executeQuery(query);
+                                                c.setCurrentMaster("Palawan Branch");
+                                                sendOut("Now Listening to Palawan");
+                                                System.out.println("listening to Palawan");
+                                                break;
+                        case "Marinduque Branch" : 
+                                                if(c.getCurrentMaster().equals("Marinduque Branch"))
+                                                break;
+                                                c.connectToServer(c.getMarinduqueIP(), "replicator", "pass");
+                                                getMasterStatus();
+                                                c.connectToServer("localhost", "root", "");
+                                                String query2 = "STOP SLAVE;";
+                                                c.executeQuery(query2);
+                                                query2 = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                                + "MASTER_USER = 'replicator', "
+                                                + "MASTER_PASSWORD = 'pass',"
+                                                + " MASTER_LOG_FILE = '" + file + "',"
+                                                + " MASTER_LOG_POS = " + position +  ";";
+                                                c.executeQuery(query2);
+                                                query2 = "START SLAVE;";
+                                                c.executeQuery(query2);
+                                                c.setCurrentMaster("Marinduque Branch");
+                                                sendOut("Now Listening to Marinduque");
+                                                System.out.println("listening to Marinduque");
+                                                break;
                                 
                     }
                 }
@@ -126,6 +171,28 @@ public class Client {
     public void sendOut(String message)
     {
     out.println(message);
+    }
+    
+    public void getMasterStatus()
+    {
+        
+        String query = "show master status;";
+        Object o = c.getDb().execQuery(query);
+        ResultSet rs = (ResultSet) o;
+        System.out.println("Successfull master status execution\n");
+        try
+        {
+           rs.next();
+           this.file = rs.getString(1);
+           //taResults.append("File: " + file + "\n");
+           //db
+           this.position = rs.getString(2);
+           //taResults.append("Position: " + pos +"\n");
+           this.server = c.getDb().getServer();
+        } catch (SQLException ex)
+        {
+            Logger.getLogger(MyPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

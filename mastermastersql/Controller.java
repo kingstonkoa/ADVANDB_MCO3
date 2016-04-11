@@ -99,5 +99,10 @@ public class Controller
         this.marinduqueIP = marinduqueIP;
     }
     
+    public void executeQuery(String query)
+    {
+        db.execQuery(query);
+    }
+    
    
 }

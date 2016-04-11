@@ -59,15 +59,6 @@ public class Driver extends JFrame
        MyPanel masterPanel = new MyPanel(controller);
        mp.setPanel("Setup",masterPanel);
        
-      MyPanel2 panel2 = new MyPanel2(controller);
-      //panel2.setPreferredSize (new Dimension (750, 600));
-      mp.setPanel("Query",panel2);
-       
-       controller.setMainPanel(masterPanel);
-       
-       Client client = new Client(panel2, controller);
-       panel2.setClient(client);
-       
        JFrame frame = new JFrame("InputDialog Example #1");
 
        String currentNode = (String) JOptionPane.showInputDialog(frame, 
@@ -77,6 +68,18 @@ public class Driver extends JFrame
         null, 
         nodes, 
         nodes[0]);
+       controller.setCurrentNode(currentNode);
+       
+      MyPanel2 panel2 = new MyPanel2(controller);
+      //panel2.setPreferredSize (new Dimension (750, 600));
+      mp.setPanel("Query",panel2);
+       
+       controller.setMainPanel(masterPanel);
+       
+       Client client = new Client(panel2, controller);
+       panel2.setClient(client);
+       
+
        
        frame = new JFrame("InputDialog Example #1");
 
@@ -84,7 +87,7 @@ public class Driver extends JFrame
         String centralIP = JOptionPane.showInputDialog(frame, "IP for Central");
         String palawanIP = JOptionPane.showInputDialog(frame, "IP for Palawan");
         String marinduqueIP = JOptionPane.showInputDialog(frame, "IP for Marinduque");
-       controller.setCurrentNode(currentNode);
+       
        controller.setCentralIP(centralIP);
        controller.setPalawanIP(palawanIP);
        controller.setMarinduqueIP(marinduqueIP);

@@ -4,8 +4,11 @@ package mastermastersql;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -24,6 +27,11 @@ public class MyPanel2 extends JPanel {
     private Database db;
     private ResultSet result;
     private Client client;
+    private JTextField connectionStatus;
+    private String centralPass ="";
+    private String palawanPass = "koa10057";
+    private String marinduquePass = "020296jm";
+    private Boolean isConnected = true;
     
     public MyPanel2(Controller c) {
         this.c = c;
@@ -35,7 +43,9 @@ public class MyPanel2 extends JPanel {
         btnClear = new JButton ("CLEAR");
         lbLog = new JLabel ("Log :");
         taLog = new JTextArea (5, 5);
-        btnResult = new JButton ("SHOW RESULTS");
+        btnResult = new JButton ("SHOW RESULTS");   
+        connectionStatus = new JTextField(c.getCurrentNode()+" Running");
+        connectionStatus.setEditable(false);
 
         //adjust size and set layout
         setPreferredSize (new Dimension (716, 444));
@@ -49,6 +59,7 @@ public class MyPanel2 extends JPanel {
         add (lbLog);
         add (taLog);
         add (btnResult);
+        add (connectionStatus);
 
         //set component bounds (only needed by Absolute Positioning)
         lbQuery.setBounds (35, 20, 100, 25);
@@ -58,11 +69,130 @@ public class MyPanel2 extends JPanel {
         lbLog.setBounds (365, 20, 100, 25);
         taLog.setBounds (365, 45, 315, 320);
         btnResult.setBounds (150, 375, 140, 25);
-        
+        connectionStatus.setBounds (300, 375, 140, 25);
         btnExecute.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 client.sendOut("Hello");
+                //INSERT BALDIP
+                                //check occurence of ; symbol for mutli query
+                int countQueries = taQuery.getText().length() - taQuery.getText().replace(";", "").length();
+                
+                if(countQueries == 1)//run once
+                {
+                    Object o = db.execQuery(taQuery.getText());
+                    try{
+                        String s = (String) o;
+                        JOptionPane.showMessageDialog(null,
+                        s,
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+                    }
+                    catch(Exception e){
+
+                        try{
+                             int u = (Integer) o;
+                             JOptionPane.showMessageDialog(null,
+                                u + "rows udpated");
+                        }
+                        catch(Exception exc){
+                                ResultSet rs = (ResultSet) o;
+                                result = rs;
+                                JOptionPane.showMessageDialog(null,
+                                "Execution Successfull");    
+
+                        }
+
+
+                    }
+                }
+                else { // get reulst of multiple queries
+                    ArrayList<Object> resultList = db.SplitQueries(taQuery.getText());
+                    
+                    for(Object o : resultList)
+                    {
+                        try{
+                            String s = (String) o;
+                            JOptionPane.showMessageDialog(null,
+                            s,
+                            "Warning",
+                            JOptionPane.WARNING_MESSAGE);
+                        }
+                        catch(Exception e){
+
+                            try{
+                                 int u = (Integer) o;
+                                 JOptionPane.showMessageDialog(null,
+                                    u + "rows udpated");
+                            }
+                            catch(Exception exc){
+                                    ResultSet rs = (ResultSet) o;
+                                    result = rs;
+                                    JOptionPane.showMessageDialog(null,
+                                    "Execution Successfull");    
+
+                            }
+
+
+                        }
+                    }
+                }
+                    switch(c.getCurrentNode())
+                    {
+                        case "Central Office": Connection connection = null;
+                                                try {
+                                                    // Succes!
+                                                    connection = DriverManager.getConnection("localhost", "root", centralPass);
+                                                    connectionStatus.setText(c.getCurrentNode()+" Running");
+                                                    if(isConnected == false)
+                                                    {
+                                                        client.executeRecoveryTo("Palawan Branch");
+                                                        client.executeRecoveryTo("Marinduque Branch");
+                                                        client.sendOut("is Back");
+                                                    }
+                                                    isConnected = true;                                                   
+                                                } catch (SQLException e) {
+                                                    // Fail!
+                                                    isConnected = false;
+                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
+                                                    client.sendOut("is DOWN");
+                                                }  break;
+                        case "Palawan Branch":  Connection connection2 = null;
+                                                try {
+                                                    // Succes!
+                                                    connection2 = DriverManager.getConnection("localhost", "root", palawanPass);
+                                                    connectionStatus.setText(c.getCurrentNode()+" Running");
+                                                    if(isConnected == false)
+                                                    {
+                                                        client.executeRecoveryTo("Central Office Palawan");
+                                                        client.sendOut("is Back");
+                                                    }
+                                                    isConnected = true;
+                                                } catch (SQLException e) {
+                                                    // Fail!
+                                                    isConnected = false;
+                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
+                                                    client.sendOut("is DOWN");
+                                                }  break;
+                        case "Marinduque Branch": Connection connection3 = null;
+                                                try {
+                                                    // Succes!
+                                                    connection3 = DriverManager.getConnection("localhost", "root", marinduquePass);
+                                                    connectionStatus.setText(c.getCurrentNode()+" Running");
+                                                    if(isConnected == false)
+                                                    {
+                                                        client.executeRecoveryTo("Central Office Marinduque");
+                                                        client.sendOut("is Back");
+                                                    }
+                                                    isConnected = true;
+                                                } catch (SQLException e) {
+                                                    // Fail!
+                                                    isConnected = false;
+                                                    connectionStatus.setText(c.getCurrentNode()+" Down");
+                                                    client.sendOut("is DOWN");
+                                                }  break;
+                    }
+                   
                 setDB();
                 Object o = db.execQuery(taQuery.getText());
                 try{

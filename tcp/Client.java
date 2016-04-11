@@ -114,7 +114,8 @@ public class Client {
             } else if (line.startsWith("MESSAGE")) {
                 panel2.appendLog(line.substring(8) + "\n");
                 String str = line.substring(8) + "\n";
-                String[] parts = str.split(":", 2);
+                String[] parts = str.split(":");
+                System.out.println(parts[0]);
                 //messageArea.append(line.substring(8) + "\n");
                 System.out.println(parts[0]);
                 if(!parts[0].equals("Central Office") && c.getCurrentNode().equals("Central Office")) // a Palawan or Marinduque message, and you are central
@@ -123,7 +124,7 @@ public class Client {
                     switch(parts[0])
                     {
                         case "Palawan Branch" : if(c.getCurrentMaster().equals("Palawan Branch"))
-                                                break;
+                                                    break;
                                                 c.connectToServer(c.getPalawanIP(), "replicator", "pass");
                                                 getMasterStatus();
                                                 c.connectToServer("localhost", "root", "");
@@ -143,7 +144,7 @@ public class Client {
                                                 break;
                         case "Marinduque Branch" : 
                                                 if(c.getCurrentMaster().equals("Marinduque Branch"))
-                                                break;
+                                                    break;
                                                 c.connectToServer(c.getMarinduqueIP(), "replicator", "pass");
                                                 getMasterStatus();
                                                 c.connectToServer("localhost", "root", "");
@@ -193,6 +194,91 @@ public class Client {
         {
             Logger.getLogger(MyPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void executeRecoveryTo(String node)
+    {
+     switch(node)
+        {
+            case "Palawan Branch" :
+                                    c.connectToServer(c.getPalawanIP(), "replicator", "pass");
+                                    getMasterStatus();
+                                    c.connectToServer("localhost", "root", "");
+                                    String query = "STOP SLAVE;";
+                                    c.executeQuery(query);
+                                    query = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                    + "MASTER_USER = 'replicator', "
+                                    + "MASTER_PASSWORD = 'pass',"
+                                    + " MASTER_LOG_FILE = '" + file + "',"
+                                    + " MASTER_LOG_POS = " + position +  ";";
+                                    c.executeQuery(query);
+                                    query = "START SLAVE;";
+                                    c.executeQuery(query);
+                                    c.setCurrentMaster("Palawan Branch");
+                                    sendOut("Now Listening to Palawan");
+                                    System.out.println("listening to Palawan");
+                                    break;
+                
+            case "Marinduque Branch" : 
+                                    
+                                    c.connectToServer(c.getMarinduqueIP(), "replicator", "pass");
+                                    getMasterStatus();
+                                    c.connectToServer("localhost", "root", "");
+                                    String query2 = "STOP SLAVE;";
+                                    c.executeQuery(query2);
+                                    query2 = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                    + "MASTER_USER = 'replicator', "
+                                    + "MASTER_PASSWORD = 'pass',"
+                                    + " MASTER_LOG_FILE = '" + file + "',"
+                                    + " MASTER_LOG_POS = " + position +  ";";
+                                    c.executeQuery(query2);
+                                    query2 = "START SLAVE;";
+                                    c.executeQuery(query2);
+                                    c.setCurrentMaster("Marinduque Branch");
+                                    sendOut("Now Listening to Marinduque");
+                                    System.out.println("listening to Marinduque");
+                                    break;
+           case "Central Office Marinduque" : 
+                                    
+                                    c.connectToServer(c.getMarinduqueIP(), "replicator", "pass");
+                                    getMasterStatus();
+                                    c.connectToServer("localhost", "root", "020296jm");
+                                    String query3 = "STOP SLAVE;";
+                                    c.executeQuery(query3);
+                                    query3 = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                    + "MASTER_USER = 'replicator', "
+                                    + "MASTER_PASSWORD = 'pass',"
+                                    + " MASTER_LOG_FILE = '" + file + "',"
+                                    + " MASTER_LOG_POS = " + position +  ";";
+                                    c.executeQuery(query3);
+                                    query3 = "START SLAVE;";
+                                    c.executeQuery(query3);
+                                    c.setCurrentMaster("Central Office");
+                                    sendOut("Now Listening to Central Office");
+                                    System.out.println("listening to Central Office");
+                                    break;
+            case "Central Office Palawan" : 
+
+                                 c.connectToServer(c.getMarinduqueIP(), "replicator", "pass");
+                                 getMasterStatus();
+                                 c.connectToServer("localhost", "root", "koa10057");
+                                 String query4 = "STOP SLAVE;";
+                                 c.executeQuery(query4);
+                                 query4 = "CHANGE MASTER TO MASTER_HOST = '" + server +  "', "
+                                 + "MASTER_USER = 'replicator', "
+                                 + "MASTER_PASSWORD = 'pass',"
+                                 + " MASTER_LOG_FILE = '" + file + "',"
+                                 + " MASTER_LOG_POS = " + position +  ";";
+                                 c.executeQuery(query4);
+                                 query4 = "START SLAVE;";
+                                 c.executeQuery(query4);
+                                 c.setCurrentMaster("Central Office");
+                                 sendOut("Now Listening to Central Office");
+                                 System.out.println("listening to Central Office");
+                                 break;
+
+        }
+    
     }
 
     /**

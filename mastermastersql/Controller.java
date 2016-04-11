@@ -30,7 +30,7 @@ public class Controller
              db = new Database(url,username,password);
         }
         catch(Exception e){
-            System.out.printf("db error");
+            System.out.printf("db error"); // to check connection
         }
     }
 
@@ -66,7 +66,7 @@ public class Controller
     
     public String getCurrentMaster()
     {
-        return this.getCurrentMaster();
+        return this.currentMaster;
     }
 
     public String getCentralIP()

@@ -2,11 +2,13 @@ package mastermastersql;
 
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Database 
 {
 	private DBConnection connect;
         private ResultSet result;
+        private int tableLocked = 0;
 
     public Database(String url, String username, String password)
     {
@@ -17,6 +19,22 @@ public class Database
     public String getServer(){
         return connect.getIp();
     }
+        
+    public int getTableLocked() {
+        return tableLocked;
+    }
+    
+    //function to split the queries
+    public ArrayList<Object> SplitQueries(String q){
+        ArrayList<Object> resultList = new ArrayList<Object> ();
+        String[] tempQueries = q.split(";");
+        for(int i = 0; i < tempQueries.length; i++)
+        {
+            resultList.add(execQuery(tempQueries[i]));
+        }
+        return resultList;
+    }
+    
     public Object execQuery(String q)
     {
         ResultSet rs;
@@ -26,18 +44,76 @@ public class Database
             statement = connect.getConnection().prepareStatement(q);
             statement.setQueryTimeout(20);
             
-//            if(q.contains("UPDATE"))
-//            {
-//                updateResult = statement.executeUpdate();
-//                return updateResult;
-//            }
-//            else {
+            String[] temp = q.split(" ");
+            String tableName = temp[1];
+            
+            //check if table is locked and then send message if it locked
+            if(this.tableLocked == 1)
+                return "Table " + tableName +" is currently locked. \n Please try again after a few seconds";
+                
+            else if(q.contains("UPDATE"))
+            {
+                //execute the write lock
+                String prequery = "LOCK " + tableName + " WRITE;";
+                PreparedStatement LockStatement;
+                LockStatement = connect.getConnection().prepareStatement(q);
+                LockStatement.setQueryTimeout(20);
+                LockStatement.execute();
+                
+                tableLocked = 1; // global variable to be used to check if the table is locked or not
+                //delay for 2 seconds
+                try {
+                    Thread.sleep(2000); //delay of 2 seconds
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                
+                statement.execute();
+                updateResult = statement.executeUpdate();
+                
+                //execute the write unclock
+                prequery = "UNLOCK " + tableName + "WRITE;";
+                PreparedStatement UnlockStatement;
+                UnlockStatement = connect.getConnection().prepareStatement(q);
+                UnlockStatement.setQueryTimeout(20);
+                UnlockStatement.execute();
+                
+                tableLocked = 1;
+                
+                return updateResult;
+                
+            }
+            else {
+                
+                //execute the read lock
+                String prequery = "LOCK " + tableName + " READ;";
+                PreparedStatement LockStatement;
+                LockStatement = connect.getConnection().prepareStatement(q);
+                LockStatement.setQueryTimeout(20);
+                LockStatement.execute();
+                
+                tableLocked = 1; // global variable to be used to check if the table is locked or not
+                //delay for 2 seconds
+                try {
+                    Thread.sleep(2000); //delay of 2 seconds
+                } catch(InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                
                 System.out.println("Query execution sucessfull."); 
                 rs = statement.executeQuery();
                 this.result = rs;  
                 
-                return result ;
-//            }
+                
+                //execute the read unlock
+                prequery = "UNLOCK " + tableName + " READ;";
+                PreparedStatement UnlockStatement;
+                UnlockStatement = connect.getConnection().prepareStatement(q);
+                UnlockStatement.setQueryTimeout(20);
+                UnlockStatement.execute();
+                
+                tableLocked = 0;
+                return result ;           }
             
             
            

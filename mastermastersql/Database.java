@@ -3,6 +3,8 @@ package mastermastersql;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Database 
 {
@@ -48,7 +50,7 @@ public class Database
             String tableName = temp[1];
             
             //check if table is locked and then send message if it locked
-            if(this.tableLocked == 1)
+            if(checkTable())
                 return "Table " + tableName +" is currently locked. \n Please try again after a few seconds";
                 
             else if(q.contains("UPDATE"))
@@ -56,7 +58,7 @@ public class Database
                 //execute the write lock
                 String prequery = "LOCK " + tableName + " WRITE;";
                 PreparedStatement LockStatement;
-                LockStatement = connect.getConnection().prepareStatement(q);
+                LockStatement = connect.getConnection().prepareStatement(prequery);
                 LockStatement.setQueryTimeout(20);
                 LockStatement.execute();
                 
@@ -72,9 +74,9 @@ public class Database
                 updateResult = statement.executeUpdate();
                 
                 //execute the write unclock
-                prequery = "UNLOCK " + tableName + "WRITE;";
+                prequery = "UNLOCK TABLES;";
                 PreparedStatement UnlockStatement;
-                UnlockStatement = connect.getConnection().prepareStatement(q);
+                UnlockStatement = connect.getConnection().prepareStatement(prequery);
                 UnlockStatement.setQueryTimeout(20);
                 UnlockStatement.execute();
                 
@@ -88,7 +90,7 @@ public class Database
                 //execute the read lock
                 String prequery = "LOCK " + tableName + " READ;";
                 PreparedStatement LockStatement;
-                LockStatement = connect.getConnection().prepareStatement(q);
+                LockStatement = connect.getConnection().prepareStatement(prequery);
                 LockStatement.setQueryTimeout(20);
                 LockStatement.execute();
                 
@@ -106,9 +108,9 @@ public class Database
                 
                 
                 //execute the read unlock
-                prequery = "UNLOCK " + tableName + " READ;";
+                prequery = "UNLOCK TABLES;";
                 PreparedStatement UnlockStatement;
-                UnlockStatement = connect.getConnection().prepareStatement(q);
+                UnlockStatement = connect.getConnection().prepareStatement(prequery);
                 UnlockStatement.setQueryTimeout(20);
                 UnlockStatement.execute();
                 
@@ -138,4 +140,27 @@ public class Database
             return "Error in executing query";
         }
     }
-}
+
+    private boolean checkTable() {
+        
+        String query = "SHOW OPEN TABLES WHERE `Table` LIKE '%crop%' AND `Database` LIKE 'db_hpq_marinduque' AND In_use > -1;";
+        
+            try {
+                PreparedStatement statement;
+                 statement = connect.getConnection().prepareStatement(query);
+                statement.setQueryTimeout(20);
+                
+                ResultSet tablecheck = statement.executeQuery();
+                
+                tablecheck.next();
+                if(tablecheck.getString(3).equalsIgnoreCase("1"))
+                    return true;
+                else return false;
+                
+            } catch (SQLException ex) {
+                System.out.println("check table error");
+            }
+            return false;
+        }
+            
+ }

@@ -77,7 +77,17 @@ public class Driver extends JFrame
         null, 
         nodes, 
         nodes[0]);
+       
+       frame = new JFrame("InputDialog Example #1");
+
+    // prompt the user to enter their name
+        String centralIP = JOptionPane.showInputDialog(frame, "IP for Central");
+        String palawanIP = JOptionPane.showInputDialog(frame, "IP for Palawan");
+        String marinduqueIP = JOptionPane.showInputDialog(frame, "IP for Marinduque");
        controller.setCurrentNode(currentNode);
+       controller.setCentralIP(centralIP);
+       controller.setPalawanIP(palawanIP);
+       controller.setMarinduqueIP(marinduqueIP);
        client.run();
        
        

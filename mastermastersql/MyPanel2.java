@@ -76,8 +76,9 @@ public class MyPanel2 extends JPanel {
                 client.sendOut("Hello");
                 //INSERT BALDIP
                                 //check occurence of ; symbol for mutli query
-                int countQueries = taQuery.getText().length() - taQuery.getText().replace(";", "").length();
-                
+                //int countQueries = taQuery.getText().length() - taQuery.getText().replace(";", "").length();
+                int countQueries =  taQuery.getText().length() - taQuery.getText().replace(";", "").length();
+                setDB();
                 if(countQueries == 1)//run once
                 {
                     Object o = db.execQuery(taQuery.getText());
@@ -107,7 +108,10 @@ public class MyPanel2 extends JPanel {
                     }
                 }
                 else { // get reulst of multiple queries
-                    ArrayList<Object> resultList = db.SplitQueries(taQuery.getText());
+                    System.out.println(taQuery.getText());
+                    ArrayList<Object> resultList = new ArrayList<>();
+                            
+                    resultList = db.SplitQueries(taQuery.getText());
                     
                     for(Object o : resultList)
                     {

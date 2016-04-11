@@ -28,10 +28,11 @@ public class Database
     
     //function to split the queries
     public ArrayList<Object> SplitQueries(String q){
-        ArrayList<Object> resultList = new ArrayList<Object> ();
+        ArrayList<Object> resultList = new ArrayList<> ();
         String[] tempQueries = q.split(";");
         for(int i = 0; i < tempQueries.length; i++)
         {
+            System.out.print(tempQueries[i]);
             resultList.add(execQuery(tempQueries[i]));
         }
         return resultList;
@@ -46,8 +47,8 @@ public class Database
             statement = connect.getConnection().prepareStatement(q);
             statement.setQueryTimeout(20);
             
-            String[] temp = q.split(" ");
-            String tableName = temp[1];
+            //String[] temp = q.split(" ");
+            String tableName = "hpq_crop";
             
             //check if table is locked and then send message if it locked
             if(checkTable())
@@ -56,7 +57,7 @@ public class Database
             else if(q.contains("UPDATE"))
             {
                 //execute the write lock
-                String prequery = "LOCK " + tableName + " WRITE;";
+                String prequery = "LOCK TABLE  " + tableName + " WRITE;";
                 PreparedStatement LockStatement;
                 LockStatement = connect.getConnection().prepareStatement(prequery);
                 LockStatement.setQueryTimeout(20);
@@ -85,10 +86,25 @@ public class Database
                 return updateResult;
                 
             }
+            else if (q.contains("USE"))
+            {
+                System.out.println("Query execution sucessfull."); 
+                rs = statement.executeQuery();
+                this.result = rs;  
+                return "Query execution sucessfull.";
+            }
+            
+            else if (q.contains("master") || q.contains("MASTER"))
+            {
+                System.out.println("Query execution sucessfull."); 
+                rs = statement.executeQuery();
+                this.result = rs;  
+                return result;
+            }
             else {
                 
                 //execute the read lock
-                String prequery = "LOCK " + tableName + " READ;";
+                String prequery = "LOCK TABLE " + tableName + " READ;";
                 PreparedStatement LockStatement;
                 LockStatement = connect.getConnection().prepareStatement(prequery);
                 LockStatement.setQueryTimeout(20);
